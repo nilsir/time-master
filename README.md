@@ -4,6 +4,14 @@
 
 > 面向开发者的时间工具 Chrome 插件，把时间戳转换、世界时钟等高频操作收敛到浏览器工具栏，点开即用。
 
+## 截图
+
+<p align="center">
+  <img src="docs/screenshot-world-clock.png" width="280" alt="世界时钟" />
+  <img src="docs/screenshot-timestamp.png" width="280" alt="时间戳工具" />
+  <img src="docs/screenshot-settings.png" width="280" alt="设置" />
+</p>
+
 ## 功能特性
 
 - **世界时钟** — macOS 风格卡片，自动识别昼/夜配色，自选时区，左滑删除
@@ -51,6 +59,14 @@ npm run typecheck # TypeScript 类型检查
 [![Release](https://github.com/nilsir/time-master/actions/workflows/build.yml/badge.svg)](https://github.com/nilsir/time-master/actions/workflows/build.yml)
 
 > A Chrome extension for developers — timestamp conversion, world clock, and more. All in one click from your browser toolbar.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshot-world-clock.png" width="280" alt="World Clock" />
+  <img src="docs/screenshot-timestamp.png" width="280" alt="Timestamp Tools" />
+  <img src="docs/screenshot-settings.png" width="280" alt="Settings" />
+</p>
 
 ## Features
 
