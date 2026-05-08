@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useT } from '@/composables/useT'
 import { formatTimestamp } from '@/lib/time'
 import { FORMAT_PRESETS } from '@/lib/constants'
 import { useStoredValue } from '@/composables/useStorage'
 import TimezoneSelect from '../common/TimezoneSelect.vue'
 import CopyButton from '../common/CopyButton.vue'
+
+const { t } = useT()
 
 const input = ref(String(Math.floor(Date.now() / 1000)))
 const tz = useStoredValue('defaultTimezone')
@@ -18,31 +21,39 @@ const activeFmt = computed(() =>
 const result = computed(() =>
   formatTimestamp(input.value.trim(), tz.value, activeFmt.value),
 )
+
+const errorText = computed(() => {
+  if (result.value.ok) return ''
+  if (result.value.error === 'tzOrFmtInvalid') {
+    return t('errors.tzOrFmtInvalid', { detail: result.value.detail ?? '' })
+  }
+  return t(`errors.${result.value.error}`)
+})
 </script>
 
 <template>
   <section class="card">
-    <h3 class="card-title">时间戳 → 格式化</h3>
+    <h3 class="card-title">{{ t('timestamp.tsToFmt') }}</h3>
 
     <input
       v-model="input"
       type="text"
       class="ts-input tabular"
-      placeholder="输入时间戳（10位秒 / 13位毫秒，自动识别）"
+      :placeholder="t('timestamp.inputTsPlaceholder')"
     />
 
     <div class="row">
-      <label>时区</label>
+      <label>{{ t('timestamp.timezone') }}</label>
       <TimezoneSelect v-model="tz" />
     </div>
 
     <div class="row">
-      <label>格式</label>
+      <label>{{ t('timestamp.format') }}</label>
       <select v-model="fmtPreset" class="select">
         <option v-for="p in FORMAT_PRESETS" :key="p.value" :value="p.value">
           {{ p.label }}
         </option>
-        <option value="__custom">自定义...</option>
+        <option value="__custom">{{ t('timestamp.custom') }}</option>
       </select>
     </div>
 
@@ -51,14 +62,14 @@ const result = computed(() =>
       v-model="customFmt"
       type="text"
       class="ts-input"
-      placeholder="自定义格式（dayjs tokens，如 YYYY-MM-DD HH:mm）"
+      :placeholder="t('timestamp.customFormatPlaceholder')"
     />
 
     <div class="divider" />
 
     <div class="result-row">
       <div v-if="result.ok" class="result-text tabular">{{ result.value }}</div>
-      <div v-else class="result-error">{{ result.error }}</div>
+      <div v-else class="result-error">{{ errorText }}</div>
       <CopyButton v-if="result.ok" :text="result.value" size="sm" />
     </div>
   </section>
@@ -105,7 +116,7 @@ const result = computed(() =>
   gap: 8px;
 }
 .row label {
-  width: 36px;
+  width: 48px;
   font-size: 12px;
   color: var(--text-secondary);
 }

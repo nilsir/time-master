@@ -9,6 +9,7 @@ const DEFAULTS: UserSettings = {
   tsUnit: 'auto',
   defaultTimezone: 'Asia/Shanghai',
   defaultFormat: 'YYYY-MM-DD HH:mm:ss',
+  language: 'system',
 }
 
 interface CacheEntry {
@@ -98,5 +99,6 @@ export function useSettings() {
     tsUnit: useStoredValue('tsUnit'),
     defaultTimezone: useStoredValue('defaultTimezone'),
     defaultFormat: useStoredValue('defaultFormat'),
+    language: useStoredValue('language'),
   }
 }

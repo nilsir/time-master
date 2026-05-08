@@ -1,0 +1,78 @@
+{
+  "app": {
+    "settings": "Settings",
+    "popOut": "Open in standalone window"
+  },
+  "tabs": {
+    "worldClock": "World Clock",
+    "timestamp": "Timestamp"
+  },
+  "worldClock": {
+    "addTimezone": "Add timezone",
+    "emptyTitle": "No timezones yet",
+    "emptyDesc": "Tap \"Add timezone\" below to start",
+    "pickerTitle": "Add timezone",
+    "searchPlaceholder": "🔍  Search by city, timezone, or UTC offset (e.g. +8)",
+    "added": "Added",
+    "noMatch": "No matches",
+    "removeTitle": "Remove",
+    "relative": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "daysAfter": "In {n} days",
+      "daysBefore": "{n} days ago"
+    }
+  },
+  "timestamp": {
+    "nowTitle": "Current Timestamp",
+    "pause": "Pause",
+    "resume": "Resume",
+    "seconds": "s",
+    "millis": "ms",
+    "localPrefix": "Local: ",
+    "tsToFmt": "Timestamp → Formatted",
+    "fmtToTs": "Formatted → Timestamp",
+    "inputTsPlaceholder": "Enter timestamp (10-digit seconds or 13-digit ms; auto-detected)",
+    "inputFmtPlaceholder": "Enter formatted time (must match selected format)",
+    "customFormatPlaceholder": "Custom format (Day.js tokens, e.g. YYYY-MM-DD HH:mm)",
+    "timezone": "Timezone",
+    "format": "Format",
+    "custom": "Custom...",
+    "pasteHint": "Paste a timestamp or formatted time"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "timeFormat": "Time format",
+    "timeFormat24": "24-hour",
+    "timeFormat12": "12-hour",
+    "tsUnit": "Timestamp precision",
+    "tsUnitAuto": "Auto (s / ms)",
+    "tsUnitS": "Seconds only",
+    "tsUnitMs": "Milliseconds only",
+    "language": "Language",
+    "langSystem": "System",
+    "langZh": "中文",
+    "langEn": "English"
+  },
+  "errors": {
+    "invalidTs": "Invalid timestamp",
+    "inputRequired": "Please enter a time",
+    "parseFailed": "Cannot parse with selected format",
+    "tzOrFmtInvalid": "Invalid timezone or format: {detail}"
+  },
+  "copy": {
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "tzSelect": {
+    "placeholder": "Choose timezone",
+    "searchPlaceholder": "Search city or UTC offset (e.g. +8)",
+    "noMatch": "No matches"
+  }
+}

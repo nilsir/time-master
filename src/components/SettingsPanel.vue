@@ -1,38 +1,50 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useT } from '@/composables/useT'
 import { useStoredValue } from '@/composables/useStorage'
-import type { ThemeMode, TimeFormat, TsUnitMode } from '@/types'
+import type { LanguageMode, ThemeMode, TimeFormat, TsUnitMode } from '@/types'
 
 defineEmits<{ (e: 'close'): void }>()
+
+const { t } = useT()
 
 const theme = useStoredValue('theme')
 const timeFormat = useStoredValue('timeFormat')
 const tsUnit = useStoredValue('tsUnit')
+const language = useStoredValue('language')
 
-const themeOptions: { value: ThemeMode; label: string }[] = [
-  { value: 'system', label: '跟随系统' },
-  { value: 'light', label: '浅色' },
-  { value: 'dark', label: '深色' },
-]
-const formatOptions: { value: TimeFormat; label: string }[] = [
-  { value: '24h', label: '24 小时' },
-  { value: '12h', label: '12 小时' },
-]
-const unitOptions: { value: TsUnitMode; label: string }[] = [
-  { value: 'auto', label: '自适应（秒/毫秒）' },
-  { value: 's', label: '仅秒' },
-  { value: 'ms', label: '仅毫秒' },
-]
+const themeOptions = computed<{ value: ThemeMode; label: string }[]>(() => [
+  { value: 'system', label: t('settings.themeSystem') },
+  { value: 'light', label: t('settings.themeLight') },
+  { value: 'dark', label: t('settings.themeDark') },
+])
+const formatOptions = computed<{ value: TimeFormat; label: string }[]>(() => [
+  { value: '24h', label: t('settings.timeFormat24') },
+  { value: '12h', label: t('settings.timeFormat12') },
+])
+const unitOptions = computed<{ value: TsUnitMode; label: string }[]>(() => [
+  { value: 'auto', label: t('settings.tsUnitAuto') },
+  { value: 's', label: t('settings.tsUnitS') },
+  { value: 'ms', label: t('settings.tsUnitMs') },
+])
+const langOptions = computed<{ value: LanguageMode; label: string }[]>(() => [
+  { value: 'system', label: t('settings.langSystem') },
+  { value: 'zh', label: t('settings.langZh') },
+  { value: 'en', label: t('settings.langEn') },
+])
 </script>
 
 <template>
-  <div class="settings" role="dialog" aria-label="设置">
+  <div class="settings" role="dialog" :aria-label="t('settings.title')">
     <header class="settings-head">
-      <span class="title">设置</span>
-      <button class="close" aria-label="关闭" @click="$emit('close')">✕</button>
+      <span class="title">{{ t('settings.title') }}</span>
+      <button class="close" :aria-label="t('settings.close')" @click="$emit('close')">
+        ✕
+      </button>
     </header>
 
     <div class="group">
-      <div class="group-label">主题</div>
+      <div class="group-label">{{ t('settings.theme') }}</div>
       <label v-for="o in themeOptions" :key="o.value" class="opt">
         <input
           type="radio"
@@ -46,7 +58,21 @@ const unitOptions: { value: TsUnitMode; label: string }[] = [
     </div>
 
     <div class="group">
-      <div class="group-label">时间制</div>
+      <div class="group-label">{{ t('settings.language') }}</div>
+      <label v-for="o in langOptions" :key="o.value" class="opt">
+        <input
+          type="radio"
+          name="language"
+          :value="o.value"
+          :checked="language === o.value"
+          @change="language = o.value"
+        />
+        <span>{{ o.label }}</span>
+      </label>
+    </div>
+
+    <div class="group">
+      <div class="group-label">{{ t('settings.timeFormat') }}</div>
       <label v-for="o in formatOptions" :key="o.value" class="opt">
         <input
           type="radio"
@@ -60,7 +86,7 @@ const unitOptions: { value: TsUnitMode; label: string }[] = [
     </div>
 
     <div class="group">
-      <div class="group-label">时间戳精度</div>
+      <div class="group-label">{{ t('settings.tsUnit') }}</div>
       <label v-for="o in unitOptions" :key="o.value" class="opt">
         <input
           type="radio"

@@ -3,12 +3,13 @@ import pkg from './package.json' with { type: 'json' }
 
 export default defineManifest({
   manifest_version: 3,
-  name: 'Time Master',
+  name: '__MSG_extName__',
   version: pkg.version,
-  description: 'Timestamp tools and macOS-style world clock at your fingertips.',
+  description: '__MSG_extDesc__',
+  default_locale: 'en',
   action: {
     default_popup: 'src/popup/index.html',
-    default_title: 'Time Master',
+    default_title: '__MSG_extName__',
     default_icon: {
       '16': 'icons/icon-16.png',
       '32': 'icons/icon-32.png',

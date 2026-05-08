@@ -40,9 +40,10 @@ describe('formatTimestamp', () => {
     expect(r.ok).toBe(true)
     if (r.ok) expect(r.value).toBe('1970-01-01 08:00:00')
   })
-  it('errors on invalid timestamp', () => {
+  it('returns invalidTs error key for garbage input', () => {
     const r = formatTimestamp('abc', 'Asia/Shanghai', 'YYYY-MM-DD')
     expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error).toBe('invalidTs')
   })
 })
 
@@ -67,9 +68,15 @@ describe('parseToTimestamp', () => {
       if (p.ok) expect(p.value).toBe(1714579200000)
     }
   })
-  it('errors on empty', () => {
+  it('returns inputRequired error key on empty input', () => {
     const r = parseToTimestamp('', 'UTC', 'YYYY-MM-DD')
     expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error).toBe('inputRequired')
+  })
+  it('returns parseFailed error key on garbage', () => {
+    const r = parseToTimestamp('not a date', 'UTC', 'YYYY-MM-DD HH:mm:ss')
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error).toBe('parseFailed')
   })
 })
 

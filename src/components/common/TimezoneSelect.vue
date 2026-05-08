@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useT } from '@/composables/useT'
 import { getTimezoneList } from '@/composables/useTimezones'
 
 const props = defineProps<{
@@ -8,16 +9,17 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 
+const { t } = useT()
 const open = ref(false)
 const query = ref('')
 const all = getTimezoneList()
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase()
   if (!q) return all.slice(0, 100)
-  return all.filter((t) => t.haystack.includes(q)).slice(0, 200)
+  return all.filter((entry) => entry.haystack.includes(q)).slice(0, 200)
 })
 
-const current = computed(() => all.find((t) => t.tz === props.modelValue))
+const current = computed(() => all.find((entry) => entry.tz === props.modelValue))
 
 watch(open, (v) => {
   if (!v) query.value = ''
@@ -37,7 +39,9 @@ function pick(tz: string) {
       aria-haspopup="listbox"
       @click="open = !open"
     >
-      <span class="tz-label">{{ current?.city ?? modelValue ?? placeholder }}</span>
+      <span class="tz-label">{{
+        current?.city ?? modelValue ?? placeholder ?? t('tzSelect.placeholder')
+      }}</span>
       <span class="tz-offset">{{ current?.offsetLabel ?? '' }}</span>
       <span class="caret" aria-hidden="true">▾</span>
     </button>
@@ -46,24 +50,26 @@ function pick(tz: string) {
         v-model="query"
         class="tz-search"
         type="text"
-        placeholder="搜索城市或 UTC 偏移（如 +8）"
+        :placeholder="t('tzSelect.searchPlaceholder')"
         autofocus
       />
       <div class="tz-list">
         <button
-          v-for="t in filtered"
-          :key="t.tz"
+          v-for="entry in filtered"
+          :key="entry.tz"
           class="tz-item"
-          :class="{ active: t.tz === modelValue }"
+          :class="{ active: entry.tz === modelValue }"
           role="option"
-          :aria-selected="t.tz === modelValue"
-          @click="pick(t.tz)"
+          :aria-selected="entry.tz === modelValue"
+          @click="pick(entry.tz)"
         >
-          <span class="tz-item-city">{{ t.city }}</span>
-          <span class="tz-item-tz">{{ t.tz }}</span>
-          <span class="tz-item-offset">{{ t.offsetLabel }}</span>
+          <span class="tz-item-city">{{ entry.city }}</span>
+          <span class="tz-item-tz">{{ entry.tz }}</span>
+          <span class="tz-item-offset">{{ entry.offsetLabel }}</span>
         </button>
-        <div v-if="filtered.length === 0" class="tz-empty">无匹配结果</div>
+        <div v-if="filtered.length === 0" class="tz-empty">
+          {{ t('tzSelect.noMatch') }}
+        </div>
       </div>
     </div>
   </div>

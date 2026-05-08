@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useT } from '@/composables/useT'
 import dayjs from '@/lib/dayjs'
 import { useNow, togglePause } from '@/composables/useNow'
 import { useClipboard } from '@/composables/useClipboard'
+import { useStoredValue } from '@/composables/useStorage'
 
+const { t } = useT()
 const { now, paused } = useNow()
+const tsUnit = useStoredValue('tsUnit')
 const seconds = computed(() => Math.floor(now.value / 1000))
 const millis = computed(() => now.value)
 const local = computed(() => dayjs(now.value).format('YYYY-MM-DD HH:mm:ss'))
@@ -23,35 +27,42 @@ async function copyMs() {
 <template>
   <section class="card">
     <header class="card-head">
-      <h3>当前时间戳</h3>
-      <button class="pause" :title="paused ? '继续' : '暂停'" @click="togglePause">
+      <h3>{{ t('timestamp.nowTitle') }}</h3>
+      <button
+        class="pause"
+        :title="paused ? t('timestamp.resume') : t('timestamp.pause')"
+        :aria-label="paused ? t('timestamp.resume') : t('timestamp.pause')"
+        @click="togglePause"
+      >
         <span aria-hidden="true">{{ paused ? '▶' : '⏸' }}</span>
       </button>
     </header>
 
     <button
+      v-if="tsUnit !== 'ms'"
       class="row tabular"
       :class="{ flash: sClip.copied.value }"
-      :title="sClip.copied.value ? '已复制' : '点击复制秒级时间戳'"
+      :title="sClip.copied.value ? t('copy.copied') : t('copy.copy')"
       @click="copyS"
     >
       <span class="num">{{ seconds }}</span>
-      <span class="unit">秒</span>
+      <span class="unit">{{ t('timestamp.seconds') }}</span>
       <span class="status">{{ sClip.copied.value ? '✓' : '⧉' }}</span>
     </button>
 
     <button
+      v-if="tsUnit !== 's'"
       class="row tabular"
       :class="{ flash: msClip.copied.value }"
-      :title="msClip.copied.value ? '已复制' : '点击复制毫秒级时间戳'"
+      :title="msClip.copied.value ? t('copy.copied') : t('copy.copy')"
       @click="copyMs"
     >
       <span class="num">{{ millis }}</span>
-      <span class="unit">毫秒</span>
+      <span class="unit">{{ t('timestamp.millis') }}</span>
       <span class="status">{{ msClip.copied.value ? '✓' : '⧉' }}</span>
     </button>
 
-    <div class="local tabular">本地：{{ local }}</div>
+    <div class="local tabular">{{ t('timestamp.localPrefix') }}{{ local }}</div>
   </section>
 </template>
 

@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Time Master · 时间助手",
+    "description": "Extension name shown in toolbar and store."
+  },
+  "extDesc": {
+    "message": "时间戳工具与 macOS 风格的世界时钟，触手可及。",
+    "description": "Short description shown on the Chrome Web Store and extensions page."
+  }
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useT } from '@/composables/useT'
 import { useClipboard } from '@/composables/useClipboard'
 
 const props = defineProps<{
@@ -7,6 +8,7 @@ const props = defineProps<{
   size?: 'sm' | 'md'
 }>()
 
+const { t } = useT()
 const { copied, copy } = useClipboard()
 
 async function onClick() {
@@ -18,13 +20,13 @@ async function onClick() {
   <button
     class="copy-btn"
     :class="[size === 'sm' ? 'sm' : 'md', { copied }]"
-    :title="copied ? '已复制' : '复制'"
-    :aria-label="copied ? '已复制' : '复制'"
+    :title="copied ? t('copy.copied') : t('copy.copy')"
+    :aria-label="copied ? t('copy.copied') : t('copy.copy')"
     @click="onClick"
   >
     <span v-if="copied" class="ico" aria-hidden="true">✓</span>
     <span v-else class="ico" aria-hidden="true">⧉</span>
-    <span v-if="label" class="lbl">{{ copied ? '已复制' : label }}</span>
+    <span v-if="label" class="lbl">{{ copied ? t('copy.copied') : label }}</span>
   </button>
 </template>
 

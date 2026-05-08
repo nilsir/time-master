@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useT } from '@/composables/useT'
 import { useTimezones } from '@/composables/useTimezones'
 import Overlay from '../common/Overlay.vue'
 
@@ -12,6 +13,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
+const { t } = useT()
 const query = ref('')
 const { grouped } = useTimezones(() => query.value)
 const addedSet = computed(() => new Set(props.alreadyAdded))
@@ -24,13 +26,13 @@ function pick(tz: string) {
 </script>
 
 <template>
-  <Overlay title="添加时区" @close="emit('close')">
+  <Overlay :title="t('worldClock.pickerTitle')" @close="emit('close')">
     <div class="picker">
       <div class="picker-search">
         <input
           v-model="query"
           type="text"
-          placeholder="🔍  搜索城市、时区或 UTC 偏移（如 +8）"
+          :placeholder="t('worldClock.searchPlaceholder')"
           autofocus
         />
       </div>
@@ -39,24 +41,28 @@ function pick(tz: string) {
         <template v-for="g in grouped" :key="g.letter">
           <div class="letter-row">{{ g.letter }}</div>
           <button
-            v-for="t in g.items"
-            :key="t.tz"
+            v-for="item in g.items"
+            :key="item.tz"
             class="tz-row"
-            :class="{ disabled: addedSet.has(t.tz) }"
-            :disabled="addedSet.has(t.tz)"
-            @click="pick(t.tz)"
+            :class="{ disabled: addedSet.has(item.tz) }"
+            :disabled="addedSet.has(item.tz)"
+            @click="pick(item.tz)"
           >
             <div class="tz-row-main">
-              <div class="tz-row-city">{{ t.city }}</div>
-              <div class="tz-row-tz">{{ t.tz }}</div>
+              <div class="tz-row-city">{{ item.city }}</div>
+              <div class="tz-row-tz">{{ item.tz }}</div>
             </div>
             <div class="tz-row-tail tabular">
-              <span v-if="addedSet.has(t.tz)" class="badge">已添加</span>
-              <span class="offset">{{ t.offsetLabel }}</span>
+              <span v-if="addedSet.has(item.tz)" class="badge">{{
+                t('worldClock.added')
+              }}</span>
+              <span class="offset">{{ item.offsetLabel }}</span>
             </div>
           </button>
         </template>
-        <div v-if="grouped.length === 0" class="empty">无匹配结果</div>
+        <div v-if="grouped.length === 0" class="empty">
+          {{ t('worldClock.noMatch') }}
+        </div>
       </div>
     </div>
   </Overlay>

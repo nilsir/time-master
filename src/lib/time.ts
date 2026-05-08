@@ -3,9 +3,15 @@ import { DAY_START_HOUR, NIGHT_START_HOUR } from './constants'
 
 export type TsUnit = 'ms' | 's' | 'invalid'
 
+export type TimeErrorKey =
+  | 'invalidTs'
+  | 'inputRequired'
+  | 'parseFailed'
+  | 'tzOrFmtInvalid'
+
 export type ParseResult<T> =
   | { ok: true; value: T }
-  | { ok: false; error: string }
+  | { ok: false; error: TimeErrorKey; detail?: string }
 
 export function detectTsUnit(input: number | string): TsUnit {
   const s = String(input).trim()
@@ -31,12 +37,12 @@ export function formatTimestamp(
   fmt: string,
 ): ParseResult<string> {
   const ms = toMillis(ts)
-  if (ms === null) return { ok: false, error: '无效时间戳' }
+  if (ms === null) return { ok: false, error: 'invalidTs' }
   try {
     const value = dayjs(ms).tz(tz).format(fmt)
     return { ok: true, value }
   } catch (e) {
-    return { ok: false, error: `时区或格式无效：${(e as Error).message}` }
+    return { ok: false, error: 'tzOrFmtInvalid', detail: (e as Error).message }
   }
 }
 
@@ -45,13 +51,13 @@ export function parseToTimestamp(
   tz: string,
   fmt: string,
 ): ParseResult<number> {
-  if (!s.trim()) return { ok: false, error: '请输入时间' }
+  if (!s.trim()) return { ok: false, error: 'inputRequired' }
   try {
     const d = dayjs.tz(s, fmt, tz)
-    if (!d.isValid()) return { ok: false, error: '时间格式无法解析' }
+    if (!d.isValid()) return { ok: false, error: 'parseFailed' }
     return { ok: true, value: d.valueOf() }
   } catch (e) {
-    return { ok: false, error: `解析失败：${(e as Error).message}` }
+    return { ok: false, error: 'parseFailed', detail: (e as Error).message }
   }
 }
 
@@ -75,15 +81,6 @@ export function relativeDayOffset(ms: number, tz: string): number {
   const thereStart = dayjs.tz(there.format('YYYY-MM-DD 00:00:00'), tz)
   const diffMs = thereStart.valueOf() - localStart.valueOf()
   return Math.round(diffMs / (24 * 60 * 60 * 1000))
-}
-
-export function relativeDayLabel(ms: number, tz: string): string {
-  const days = relativeDayOffset(ms, tz)
-  if (days === 0) return '今天'
-  if (days === 1) return '明天'
-  if (days === -1) return '昨天'
-  if (days > 1) return `${days} 天后`
-  return `${Math.abs(days)} 天前`
 }
 
 export function hourOffsetFromLocal(ms: number, tz: string): number {

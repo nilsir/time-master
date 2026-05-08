@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useT } from '@/composables/useT'
 import { useNow } from '@/composables/useNow'
 import { useStoredValue } from '@/composables/useStorage'
 import WorldClockItem from './WorldClockItem.vue'
 import TimezonePicker from './TimezonePicker.vue'
 
+const { t } = useT()
 const { now } = useNow()
 const selectedTimezones = useStoredValue('selectedTimezones')
 const timeFormat = useStoredValue('timeFormat')
@@ -25,8 +27,8 @@ function remove(tz: string) {
   <div class="wc-wrap">
     <div v-if="selectedTimezones.length === 0" class="wc-empty">
       <div class="wc-empty-icon">🌐</div>
-      <div class="wc-empty-title">尚未添加时区</div>
-      <div class="wc-empty-desc">点击下方"添加时区"开始</div>
+      <div class="wc-empty-title">{{ t('worldClock.emptyTitle') }}</div>
+      <div class="wc-empty-desc">{{ t('worldClock.emptyDesc') }}</div>
     </div>
 
     <div v-else class="wc-list" role="list">
@@ -42,7 +44,7 @@ function remove(tz: string) {
 
     <div class="wc-bottom">
       <button class="add-btn" @click="showPicker = true">
-        <span class="plus" aria-hidden="true">⊕</span> 添加时区
+        <span class="plus" aria-hidden="true">⊕</span> {{ t('worldClock.addTimezone') }}
       </button>
     </div>
 

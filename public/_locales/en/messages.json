@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Time Master",
+    "description": "Extension name shown in toolbar and store."
+  },
+  "extDesc": {
+    "message": "Timestamp tools and a macOS-style world clock at your fingertips.",
+    "description": "Short description shown on the Chrome Web Store and extensions page."
+  }
+}

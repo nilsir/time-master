@@ -1,0 +1,78 @@
+{
+  "app": {
+    "settings": "设置",
+    "popOut": "弹出独立窗口"
+  },
+  "tabs": {
+    "worldClock": "世界时钟",
+    "timestamp": "时间戳"
+  },
+  "worldClock": {
+    "addTimezone": "添加时区",
+    "emptyTitle": "尚未添加时区",
+    "emptyDesc": "点击下方“添加时区”开始",
+    "pickerTitle": "添加时区",
+    "searchPlaceholder": "🔍  搜索城市、时区或 UTC 偏移（如 +8）",
+    "added": "已添加",
+    "noMatch": "无匹配结果",
+    "removeTitle": "删除",
+    "relative": {
+      "today": "今天",
+      "tomorrow": "明天",
+      "yesterday": "昨天",
+      "daysAfter": "{n} 天后",
+      "daysBefore": "{n} 天前"
+    }
+  },
+  "timestamp": {
+    "nowTitle": "当前时间戳",
+    "pause": "暂停",
+    "resume": "继续",
+    "seconds": "秒",
+    "millis": "毫秒",
+    "localPrefix": "本地：",
+    "tsToFmt": "时间戳 → 格式化",
+    "fmtToTs": "格式化 → 时间戳",
+    "inputTsPlaceholder": "输入时间戳（10 位秒 / 13 位毫秒，自动识别）",
+    "inputFmtPlaceholder": "输入格式化时间（与所选格式一致）",
+    "customFormatPlaceholder": "自定义格式（Day.js tokens，如 YYYY-MM-DD HH:mm）",
+    "timezone": "时区",
+    "format": "格式",
+    "custom": "自定义...",
+    "pasteHint": "粘贴时间戳或格式化时间"
+  },
+  "settings": {
+    "title": "设置",
+    "close": "关闭",
+    "theme": "主题",
+    "themeSystem": "跟随系统",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "timeFormat": "时间制",
+    "timeFormat24": "24 小时",
+    "timeFormat12": "12 小时",
+    "tsUnit": "时间戳精度",
+    "tsUnitAuto": "自适应（秒 / 毫秒）",
+    "tsUnitS": "仅秒",
+    "tsUnitMs": "仅毫秒",
+    "language": "语言",
+    "langSystem": "跟随系统",
+    "langZh": "中文",
+    "langEn": "English"
+  },
+  "errors": {
+    "invalidTs": "无效时间戳",
+    "inputRequired": "请输入时间",
+    "parseFailed": "时间格式无法解析",
+    "tzOrFmtInvalid": "时区或格式无效：{detail}"
+  },
+  "copy": {
+    "copy": "复制",
+    "copied": "已复制"
+  },
+  "tzSelect": {
+    "placeholder": "选择时区",
+    "searchPlaceholder": "搜索城市或 UTC 偏移（如 +8）",
+    "noMatch": "无匹配结果"
+  }
+}

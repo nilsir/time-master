@@ -23,6 +23,7 @@ export const STORAGE_KEYS = {
   tsUnit: 'tsUnit',
   defaultTimezone: 'defaultTimezone',
   defaultFormat: 'defaultFormat',
+  language: 'language',
   windowBounds: 'windowBounds',
 } as const
 

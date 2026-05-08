@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
+import { useT } from '@/composables/useT'
 
 defineProps<{
   title?: string
 }>()
 
 const emit = defineEmits<{ (e: 'close'): void }>()
+const { t } = useT()
 
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') emit('close')
@@ -17,7 +19,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 <template>
   <div class="overlay" role="dialog" aria-modal="true">
     <header class="overlay-head">
-      <button class="overlay-close" aria-label="关闭" @click="emit('close')">
+      <button
+        class="overlay-close"
+        :aria-label="t('settings.close')"
+        @click="emit('close')"
+      >
         ✕
       </button>
       <span class="overlay-title">{{ title }}</span>

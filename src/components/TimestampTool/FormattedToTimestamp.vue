@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useT } from '@/composables/useT'
 import dayjs from '@/lib/dayjs'
 import { parseToTimestamp } from '@/lib/time'
 import { FORMAT_PRESETS } from '@/lib/constants'
 import { useStoredValue } from '@/composables/useStorage'
 import TimezoneSelect from '../common/TimezoneSelect.vue'
 import CopyButton from '../common/CopyButton.vue'
+
+const { t } = useT()
 
 const tz = useStoredValue('defaultTimezone')
 const fmtPreset = ref<string>(FORMAT_PRESETS[0].value)
@@ -19,23 +22,31 @@ const result = computed(() => parseToTimestamp(input.value, tz.value, activeFmt.
 
 const seconds = computed(() => (result.value.ok ? Math.floor(result.value.value / 1000) : null))
 const millis = computed(() => (result.value.ok ? result.value.value : null))
+
+const errorText = computed(() => {
+  if (result.value.ok) return ''
+  if (result.value.error === 'tzOrFmtInvalid') {
+    return t('errors.tzOrFmtInvalid', { detail: result.value.detail ?? '' })
+  }
+  return t(`errors.${result.value.error}`)
+})
 </script>
 
 <template>
   <section class="card">
-    <h3 class="card-title">格式化 → 时间戳</h3>
+    <h3 class="card-title">{{ t('timestamp.fmtToTs') }}</h3>
 
     <div class="row">
-      <label>时区</label>
+      <label>{{ t('timestamp.timezone') }}</label>
       <TimezoneSelect v-model="tz" />
     </div>
     <div class="row">
-      <label>格式</label>
+      <label>{{ t('timestamp.format') }}</label>
       <select v-model="fmtPreset" class="select">
         <option v-for="p in FORMAT_PRESETS" :key="p.value" :value="p.value">
           {{ p.label }}
         </option>
-        <option value="__custom">自定义...</option>
+        <option value="__custom">{{ t('timestamp.custom') }}</option>
       </select>
     </div>
     <input
@@ -43,7 +54,7 @@ const millis = computed(() => (result.value.ok ? result.value.value : null))
       v-model="customFmt"
       type="text"
       class="ts-input"
-      placeholder="自定义格式（dayjs tokens）"
+      :placeholder="t('timestamp.customFormatPlaceholder')"
     />
 
     <input
@@ -51,20 +62,20 @@ const millis = computed(() => (result.value.ok ? result.value.value : null))
       type="text"
       class="ts-input"
       :class="{ invalid: !result.ok }"
-      placeholder="输入格式化时间（与所选格式一致）"
+      :placeholder="t('timestamp.inputFmtPlaceholder')"
     />
-    <div v-if="!result.ok" class="err">{{ result.error }}</div>
+    <div v-if="!result.ok" class="err">{{ errorText }}</div>
 
     <div class="divider" />
 
     <div class="result-row">
-      <span class="lbl">秒</span>
+      <span class="lbl">{{ t('timestamp.seconds') }}</span>
       <span v-if="seconds !== null" class="val tabular">{{ seconds }}</span>
       <span v-else class="val empty">—</span>
       <CopyButton v-if="seconds !== null" :text="String(seconds)" size="sm" />
     </div>
     <div class="result-row">
-      <span class="lbl">毫秒</span>
+      <span class="lbl">{{ t('timestamp.millis') }}</span>
       <span v-if="millis !== null" class="val tabular">{{ millis }}</span>
       <span v-else class="val empty">—</span>
       <CopyButton v-if="millis !== null" :text="String(millis)" size="sm" />
@@ -121,7 +132,7 @@ const millis = computed(() => (result.value.ok ? result.value.value : null))
   gap: 8px;
 }
 .row label {
-  width: 36px;
+  width: 48px;
   font-size: 12px;
   color: var(--text-secondary);
 }
@@ -150,7 +161,7 @@ const millis = computed(() => (result.value.ok ? result.value.value : null))
   padding: 2px 0;
 }
 .lbl {
-  width: 36px;
+  width: 48px;
   font-size: 12px;
   color: var(--text-secondary);
 }

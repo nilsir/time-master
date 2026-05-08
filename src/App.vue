@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useT } from '@/composables/useT'
 import { useTheme } from '@/composables/useTheme'
+import { useLocale } from '@/composables/useLocale'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import WorldClockList from '@/components/WorldClock/WorldClockList.vue'
 import TimestampTool from '@/components/TimestampTool/TimestampTool.vue'
@@ -11,15 +13,17 @@ const props = defineProps<{
 }>()
 
 useTheme()
+useLocale()
+const { t } = useT()
 
 type Tab = 'clock' | 'timestamp'
 const tab = ref<Tab>('clock')
 const showSettings = ref(false)
 
-const tabOptions = [
-  { value: 'clock' as const, label: '世界时钟' },
-  { value: 'timestamp' as const, label: '时间戳' },
-]
+const tabOptions = computed(() => [
+  { value: 'clock' as const, label: t('tabs.worldClock') },
+  { value: 'timestamp' as const, label: t('tabs.timestamp') },
+])
 
 function openStandalone() {
   if (!chrome?.runtime?.sendMessage) return
@@ -34,8 +38,8 @@ function openStandalone() {
     <header class="app-head">
       <button
         class="icon-btn"
-        title="设置"
-        aria-label="设置"
+        :title="t('app.settings')"
+        :aria-label="t('app.settings')"
         @click="showSettings = !showSettings"
       >
         ⚙
@@ -43,8 +47,8 @@ function openStandalone() {
       <button
         v-if="mode === 'popup'"
         class="icon-btn pop-out"
-        title="弹出独立窗口"
-        aria-label="弹出独立窗口"
+        :title="t('app.popOut')"
+        :aria-label="t('app.popOut')"
         @click="openStandalone"
       >
         ⤢
