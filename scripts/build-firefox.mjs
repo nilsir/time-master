@@ -24,6 +24,20 @@ cpSync(src, dest, { recursive: true })
 // Patch manifest.json
 const manifestPath = resolve(dest, 'manifest.json')
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
+
+// Firefox < 121 does not support background.service_worker;
+// convert to background.scripts (event page) which Firefox supports.
+const bg = manifest.background ?? {}
+if (bg.service_worker) {
+  manifest.background = {
+    scripts: [bg.service_worker],
+    ...(bg.type ? { type: bg.type } : {}),
+  }
+}
+
+// Remove minimum_chrome_version (Chrome-only field)
+delete manifest.minimum_chrome_version
+
 const patched = { ...manifest, ...firefoxPatch }
 writeFileSync(manifestPath, JSON.stringify(patched, null, 2))
 
