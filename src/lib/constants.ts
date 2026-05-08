@@ -51,4 +51,5 @@ export const TIMEZONE_CN_ALIASES: Record<string, string[]> = {
   'Pacific/Auckland': ['奥克兰', '新西兰', 'Auckland'],
   'Africa/Cairo': ['开罗', '埃及', 'Cairo'],
   'Africa/Johannesburg': ['约翰内斯堡', 'Johannesburg'],
+  'America/Anchorage': ['安克雷奇', '阿拉斯加', 'Anchorage', 'Alaska'],
 }
