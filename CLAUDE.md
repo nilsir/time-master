@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 行为规则
+
+- **禁止直接推送到远端**：执行任何 `git push` 前必须先询问用户，得到明确同意后才能推送。
+- **沟通与思考使用中文**：所有回复、分析、说明均用中文表达。
+- **文档使用中文 Markdown**：新建或修改文档（含注释性文档）时，内容以中文书写，格式使用 Markdown。
+
 ## Commands
 
 ```bash
