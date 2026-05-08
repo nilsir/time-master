@@ -1,5 +1,5 @@
 {
-  "name": "nilsir/time-master",
+  "name": "@nilsir/time-master",
   "version": "0.1.0",
   "private": true,
   "description": "Chrome extension: timestamp tools and macOS-style world clock",
