@@ -25,11 +25,14 @@ jobs:
 
       - run: npm ci
 
-      - name: Build extension
+      - name: Build Chrome extension
         run: npm run build
 
-      - name: Package dist
+      - name: Package Chrome dist
         run: zip -r time-master.zip dist/
+
+      - name: Build Firefox extension
+        run: node scripts/build-firefox.mjs
 
       - name: Semantic Release
         run: npx semantic-release

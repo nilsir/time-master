@@ -26,12 +26,12 @@ async function saveBounds(b: Bounds) {
 }
 
 async function getRememberedWindowId(): Promise<number | null> {
-  const r = await chrome.storage.session.get([STATE_KEY])
+  const r = await chrome.storage.local.get([STATE_KEY])
   return (r[STATE_KEY] as number | undefined) ?? null
 }
 async function setRememberedWindowId(id: number | null) {
-  if (id === null) await chrome.storage.session.remove(STATE_KEY)
-  else await chrome.storage.session.set({ [STATE_KEY]: id })
+  if (id === null) await chrome.storage.local.remove(STATE_KEY)
+  else await chrome.storage.local.set({ [STATE_KEY]: id })
 }
 
 async function focusOrCreateStandalone() {

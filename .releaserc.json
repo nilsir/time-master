@@ -7,7 +7,10 @@
     [
       "@semantic-release/github",
       {
-        "assets": [{ "path": "time-master.zip", "label": "time-master.zip" }]
+        "assets": [
+          { "path": "time-master.zip", "label": "time-master-chrome.zip" },
+          { "path": "time-master-firefox.zip", "label": "time-master-firefox.zip" }
+        ]
       }
     ],
     [
