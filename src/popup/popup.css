@@ -1,0 +1,9 @@
+html,
+body {
+  width: 380px;
+  height: 560px;
+}
+body.popup #app {
+  width: 380px;
+  height: 560px;
+}
