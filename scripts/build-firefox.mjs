@@ -10,7 +10,7 @@ const firefoxPatch = {
   browser_specific_settings: {
     gecko: {
       id: 'time-master@nilsir.com',
-      strict_min_version: '109.0',
+      strict_min_version: '112.0',
       data_collection_permissions: {
         required: [],
         optional: [],
