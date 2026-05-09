@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue'
+import { ref, toRaw, watch, type Ref } from 'vue'
 import { STORAGE_KEYS, DEFAULT_TIMEZONES } from '@/lib/constants'
 import type { UserSettings } from '@/types'
 
@@ -14,15 +14,66 @@ const DEFAULTS: UserSettings = {
 
 interface CacheEntry {
   ref: Ref<unknown>
+  fallback: unknown
   suppressWrite: boolean
 }
 
 const cache = new Map<string, CacheEntry>()
 let listenerInstalled = false
 
+function clonePlainValue(value: unknown): unknown {
+  const raw = toRaw(value)
+  if (Array.isArray(raw)) return [...raw]
+  if (raw && typeof raw === 'object') {
+    return { ...(raw as Record<string, unknown>) }
+  }
+  return raw
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
+}
+
+function isOneOf(value: unknown, allowed: readonly string[]) {
+  return typeof value === 'string' && allowed.includes(value)
+}
+
+function normalizeStoredValue(key: string, value: unknown, fallback: unknown) {
+  const fallbackValue = clonePlainValue(fallback)
+
+  switch (key) {
+    case STORAGE_KEYS.selectedTimezones:
+      return isStringArray(value) ? [...value] : fallbackValue
+    case STORAGE_KEYS.timeFormat:
+      return isOneOf(value, ['12h', '24h']) ? value : fallbackValue
+    case STORAGE_KEYS.theme:
+      return isOneOf(value, ['system', 'light', 'dark']) ? value : fallbackValue
+    case STORAGE_KEYS.tsUnit:
+      return isOneOf(value, ['auto', 's', 'ms']) ? value : fallbackValue
+    case STORAGE_KEYS.language:
+      return isOneOf(value, ['system', 'en', 'zh']) ? value : fallbackValue
+    case STORAGE_KEYS.defaultTimezone:
+    case STORAGE_KEYS.defaultFormat:
+      return typeof value === 'string' ? value : fallbackValue
+    default:
+      return clonePlainValue(value ?? fallbackValue)
+  }
+}
+
 function getArea(key: string): chrome.storage.StorageArea {
   if (key === STORAGE_KEYS.windowBounds) return chrome.storage.local
   return chrome.storage.sync
+}
+
+function applyExternalValue(entry: CacheEntry, key: string, value: unknown) {
+  const normalized = normalizeStoredValue(key, value, entry.fallback)
+  if (Object.is(toRaw(entry.ref.value), normalized)) {
+    entry.suppressWrite = false
+    return
+  }
+
+  entry.suppressWrite = true
+  entry.ref.value = normalized
 }
 
 function installListenerOnce() {
@@ -33,8 +84,7 @@ function installListenerOnce() {
       const entry = cache.get(key)
       if (!entry) continue
       if ('newValue' in change) {
-        entry.suppressWrite = true
-        entry.ref.value = change.newValue
+        applyExternalValue(entry, key, change.newValue)
       }
     }
   })
@@ -53,18 +103,23 @@ export function useStoredValue(key: string, fallback?: unknown) {
   const existing = cache.get(key)
   if (existing) return existing.ref
 
-  const r = ref(initial) as Ref<unknown>
-  const entry: CacheEntry = { ref: r, suppressWrite: false }
+  const normalizedInitial = normalizeStoredValue(key, initial, initial)
+  const r = ref(normalizedInitial) as Ref<unknown>
+  const entry: CacheEntry = {
+    ref: r,
+    fallback: normalizedInitial,
+    suppressWrite: false,
+  }
   cache.set(key, entry)
 
   if (chrome?.storage) {
-    entry.suppressWrite = true
     getArea(key)
       .get([key])
       .then((res) => {
-        entry.suppressWrite = true
         if (key in res && res[key] !== undefined) {
-          r.value = res[key]
+          applyExternalValue(entry, key, res[key])
+        } else {
+          entry.suppressWrite = false
         }
       })
     installListenerOnce()
@@ -81,7 +136,9 @@ export function useStoredValue(key: string, fallback?: unknown) {
       if (!chrome?.storage) return
       if (writeTimer !== null) clearTimeout(writeTimer)
       writeTimer = window.setTimeout(() => {
-        getArea(key).set({ [key]: val })
+        getArea(key).set({
+          [key]: normalizeStoredValue(key, val, normalizedInitial),
+        })
         writeTimer = null
       }, 80)
     },

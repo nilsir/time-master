@@ -14,9 +14,13 @@ const props = defineProps<{
   tz: string
   ms: number
   format: '12h' | '24h'
+  isDragging?: boolean
 }>()
 
-const emit = defineEmits<{ (e: 'remove'): void }>()
+const emit = defineEmits<{
+  (e: 'remove'): void
+  (e: 'reorder-start', event: PointerEvent): void
+}>()
 
 const { t, locale } = useT()
 
@@ -50,6 +54,7 @@ const THRESHOLD = 72
 const wrapperEl = ref<HTMLElement | null>(null)
 const swipeX = ref(0)
 const dragging = ref(false)
+const revealed = ref(false)
 const startX = ref(0)
 const startY = ref(0)
 const axisLocked = ref<'h' | 'v' | null>(null)
@@ -84,7 +89,8 @@ function onPointerMove(e: PointerEvent) {
   }
 
   if (axisLocked.value !== 'h') return
-  swipeX.value = Math.max(-THRESHOLD * 1.3, Math.min(0, dx))
+  const base = revealed.value ? -THRESHOLD : 0
+  swipeX.value = Math.max(-THRESHOLD * 1.3, Math.min(0, base + dx))
 }
 
 function onPointerUp() {
@@ -92,49 +98,122 @@ function onPointerUp() {
   dragging.value = false
   axisLocked.value = null
   if (swipeX.value <= -THRESHOLD) {
-    emit('remove')
+    swipeX.value = -THRESHOLD
+    revealed.value = true
   } else {
     swipeX.value = 0
+    revealed.value = false
   }
 }
 
 function onPointerCancel() {
   dragging.value = false
   axisLocked.value = null
+  swipeX.value = revealed.value ? -THRESHOLD : 0
+}
+
+function onDeleteClick() {
+  emit('remove')
+  revealed.value = false
   swipeX.value = 0
+}
+
+function onCardClick() {
+  if (revealed.value) {
+    revealed.value = false
+    swipeX.value = 0
+  }
+}
+
+// Drag-to-reorder handle
+function onHandlePointerDown(e: PointerEvent) {
+  if (e.button !== 0) return
+  e.stopPropagation()
+  emit('reorder-start', e)
 }
 </script>
 
 <template>
-  <div
-    ref="wrapperEl"
-    class="wc-wrapper"
-    @pointerdown="onPointerDown"
-    @pointermove="onPointerMove"
-    @pointerup="onPointerUp"
-    @pointercancel="onPointerCancel"
-  >
-    <div class="wc-delete-bg" :style="{ opacity: deleteOpacity }" aria-hidden="true">
-      <span>{{ t('worldClock.removeTitle') }}</span>
+  <div class="wc-row" :class="{ 'is-dragging': isDragging }">
+    <div class="drag-handle" @pointerdown="onHandlePointerDown" aria-hidden="true">
+      <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
+        <circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/>
+        <circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/>
+        <circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/>
+      </svg>
     </div>
-    <div :class="['wc-item', daytime ? 'day' : 'night']" :style="cardStyle" role="listitem">
-      <div class="wc-info">
-        <div class="wc-city">{{ cityName }}</div>
-        <div class="wc-sub tabular">{{ subtitle }}</div>
+    <div
+      ref="wrapperEl"
+      class="wc-wrapper"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerCancel"
+    >
+      <div
+        class="wc-delete-bg"
+        :class="{ 'is-revealed': revealed }"
+        :style="{ opacity: deleteOpacity }"
+        aria-hidden="true"
+        @click.stop="onDeleteClick"
+      >
+        <span>{{ t('worldClock.removeTitle') }}</span>
       </div>
-      <div class="wc-time tabular">
-        <div class="wc-date">{{ date }}</div>
-        <div class="wc-clock">{{ clock }}</div>
+      <div :class="['wc-item', daytime ? 'day' : 'night']" :style="cardStyle" role="listitem" @click="onCardClick">
+        <div class="wc-info">
+          <div class="wc-city">{{ cityName }}</div>
+          <div class="wc-sub tabular">{{ subtitle }}</div>
+        </div>
+        <div class="wc-time tabular">
+          <div class="wc-date">{{ date }}</div>
+          <div class="wc-clock">{{ clock }}</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.wc-row {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius);
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+}
+.wc-row.is-dragging {
+  opacity: 0.6;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+  position: relative;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  flex-shrink: 0;
+  cursor: grab;
+  color: var(--text-secondary);
+  opacity: 0.3;
+  touch-action: none;
+  user-select: none;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.drag-handle:hover {
+  opacity: 0.6;
+}
+.drag-handle:active {
+  cursor: grabbing;
+  opacity: 0.8;
+}
+
 .wc-wrapper {
+  flex: 1;
+  min-width: 0;
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;
   touch-action: pan-y;
   user-select: none;
 }
@@ -150,8 +229,12 @@ function onPointerCancel() {
   color: #fff;
   font-size: 15px;
   font-weight: 600;
-  border-radius: var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;
   pointer-events: none;
+}
+.wc-delete-bg.is-revealed {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .wc-item {
@@ -159,7 +242,7 @@ function onPointerCancel() {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;
   position: relative;
 }
 .wc-item.day {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { useT } from '@/composables/useT'
 import { useNow } from '@/composables/useNow'
 import { useStoredValue } from '@/composables/useStorage'
@@ -13,33 +13,98 @@ const timeFormat = useStoredValue('timeFormat')
 
 const showPicker = ref(false)
 
+function getSelectedList() {
+  return Array.isArray(selectedTimezones.value) ? selectedTimezones.value : []
+}
+
 function add(tz: string) {
-  const list = selectedTimezones.value
+  const list = getSelectedList()
   if (list.includes(tz)) return
   selectedTimezones.value = [...list, tz]
 }
 function remove(tz: string) {
-  selectedTimezones.value = selectedTimezones.value.filter((t) => t !== tz)
+  selectedTimezones.value = getSelectedList().filter((t) => t !== tz)
+}
+
+// Drag-to-reorder
+const listEl = ref<HTMLElement | null>(null)
+const dragList = shallowRef<string[] | null>(null)
+const dragIndex = ref<number | null>(null)
+
+const displayList = computed(() => dragList.value ?? getSelectedList())
+
+function onReorderStart(tz: string, e: PointerEvent) {
+  const list = getSelectedList()
+  const idx = list.indexOf(tz)
+  if (idx === -1) return
+  dragList.value = [...list]
+  dragIndex.value = idx
+  listEl.value?.setPointerCapture(e.pointerId)
+}
+
+function onListPointerMove(e: PointerEvent) {
+  if (dragIndex.value === null || !dragList.value || !listEl.value) return
+
+  const children = Array.from(listEl.value.children) as HTMLElement[]
+  let targetIdx = dragList.value.length - 1
+
+  for (let i = 0; i < children.length; i++) {
+    const rect = children[i].getBoundingClientRect()
+    if (e.clientY < rect.top + rect.height / 2) {
+      targetIdx = i
+      break
+    }
+  }
+
+  targetIdx = Math.max(0, Math.min(targetIdx, dragList.value.length - 1))
+
+  if (targetIdx !== dragIndex.value) {
+    const list = [...dragList.value]
+    const [item] = list.splice(dragIndex.value, 1)
+    list.splice(targetIdx, 0, item)
+    dragList.value = list
+    dragIndex.value = targetIdx
+  }
+}
+
+function onListPointerUp() {
+  if (dragList.value) {
+    selectedTimezones.value = [...dragList.value]
+  }
+  dragList.value = null
+  dragIndex.value = null
 }
 </script>
 
 <template>
   <div class="wc-wrap">
-    <div v-if="selectedTimezones.length === 0" class="wc-empty">
+    <div v-if="displayList.length === 0" class="wc-empty">
       <div class="wc-empty-icon">🌐</div>
       <div class="wc-empty-title">{{ t('worldClock.emptyTitle') }}</div>
       <div class="wc-empty-desc">{{ t('worldClock.emptyDesc') }}</div>
     </div>
 
-    <div v-else class="wc-list" role="list">
-      <WorldClockItem
-        v-for="tz in selectedTimezones"
-        :key="tz"
-        :tz="tz"
-        :ms="now"
-        :format="timeFormat"
-        @remove="remove(tz)"
-      />
+    <div
+      v-else
+      ref="listEl"
+      class="wc-list"
+      role="list"
+      @pointermove="onListPointerMove"
+      @pointerup="onListPointerUp"
+      @pointercancel="onListPointerUp"
+    >
+      <TransitionGroup name="wc-sort">
+        <WorldClockItem
+          v-for="(tz, i) in displayList"
+          :key="tz"
+          :tz="tz"
+          :ms="now"
+          :format="timeFormat"
+          :is-dragging="dragIndex !== null && i === dragIndex"
+          @remove="remove(tz)"
+          @reorder-start="(e: PointerEvent) => onReorderStart(tz, e)"
+        />
+      </TransitionGroup>
     </div>
 
     <div class="wc-bottom">
@@ -50,7 +115,7 @@ function remove(tz: string) {
 
     <TimezonePicker
       v-if="showPicker"
-      :already-added="selectedTimezones"
+      :already-added="displayList"
       @add="add"
       @close="showPicker = false"
     />
@@ -71,6 +136,9 @@ function remove(tz: string) {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.wc-sort-move {
+  transition: transform 0.2s ease;
 }
 .wc-empty {
   flex: 1;
