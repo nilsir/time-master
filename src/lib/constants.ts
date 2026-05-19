@@ -24,6 +24,7 @@ export const STORAGE_KEYS = {
   defaultTimezone: 'defaultTimezone',
   defaultFormat: 'defaultFormat',
   language: 'language',
+  defaultTab: 'defaultTab',
   windowBounds: 'windowBounds',
 } as const
 

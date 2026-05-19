@@ -10,6 +10,7 @@ const DEFAULTS: UserSettings = {
   defaultTimezone: 'Asia/Shanghai',
   defaultFormat: 'YYYY-MM-DD HH:mm:ss',
   language: 'system',
+  defaultTab: 'clock',
 }
 
 interface CacheEntry {
@@ -52,6 +53,8 @@ function normalizeStoredValue(key: string, value: unknown, fallback: unknown) {
       return isOneOf(value, ['auto', 's', 'ms']) ? value : fallbackValue
     case STORAGE_KEYS.language:
       return isOneOf(value, ['system', 'en', 'zh']) ? value : fallbackValue
+    case STORAGE_KEYS.defaultTab:
+      return isOneOf(value, ['clock', 'timestamp']) ? value : fallbackValue
     case STORAGE_KEYS.defaultTimezone:
     case STORAGE_KEYS.defaultFormat:
       return typeof value === 'string' ? value : fallbackValue
@@ -157,5 +160,6 @@ export function useSettings() {
     defaultTimezone: useStoredValue('defaultTimezone'),
     defaultFormat: useStoredValue('defaultFormat'),
     language: useStoredValue('language'),
+    defaultTab: useStoredValue('defaultTab'),
   }
 }

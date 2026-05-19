@@ -58,7 +58,10 @@
     "language": "Language",
     "langSystem": "System",
     "langZh": "中文",
-    "langEn": "English"
+    "langEn": "English",
+    "defaultTab": "Default tab",
+    "defaultTabClock": "World Clock",
+    "defaultTabTimestamp": "Timestamp"
   },
   "errors": {
     "invalidTs": "Invalid timestamp",

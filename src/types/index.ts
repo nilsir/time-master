@@ -2,6 +2,7 @@ export type ThemeMode = 'system' | 'light' | 'dark'
 export type TimeFormat = '12h' | '24h'
 export type TsUnitMode = 'auto' | 's' | 'ms'
 export type LanguageMode = 'system' | 'en' | 'zh'
+export type DefaultTab = 'clock' | 'timestamp'
 
 export interface UserSettings {
   selectedTimezones: string[]
@@ -11,6 +12,7 @@ export interface UserSettings {
   defaultTimezone: string
   defaultFormat: string
   language: LanguageMode
+  defaultTab: DefaultTab
 }
 
 export interface WindowBounds {

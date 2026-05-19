@@ -58,7 +58,10 @@
     "language": "语言",
     "langSystem": "跟随系统",
     "langZh": "中文",
-    "langEn": "English"
+    "langEn": "English",
+    "defaultTab": "默认标签页",
+    "defaultTabClock": "世界时钟",
+    "defaultTabTimestamp": "时间戳"
   },
   "errors": {
     "invalidTs": "无效时间戳",

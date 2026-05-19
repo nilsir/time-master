@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useT } from '@/composables/useT'
 import { useStoredValue } from '@/composables/useStorage'
-import type { LanguageMode, ThemeMode, TimeFormat, TsUnitMode } from '@/types'
+import type { DefaultTab, LanguageMode, ThemeMode, TimeFormat, TsUnitMode } from '@/types'
 
 defineEmits<{ (e: 'close'): void }>()
 
@@ -12,6 +12,7 @@ const theme = useStoredValue('theme')
 const timeFormat = useStoredValue('timeFormat')
 const tsUnit = useStoredValue('tsUnit')
 const language = useStoredValue('language')
+const defaultTab = useStoredValue('defaultTab')
 
 const themeOptions = computed<{ value: ThemeMode; label: string }[]>(() => [
   { value: 'system', label: t('settings.themeSystem') },
@@ -31,6 +32,10 @@ const langOptions = computed<{ value: LanguageMode; label: string }[]>(() => [
   { value: 'system', label: t('settings.langSystem') },
   { value: 'zh', label: t('settings.langZh') },
   { value: 'en', label: t('settings.langEn') },
+])
+const defaultTabOptions = computed<{ value: DefaultTab; label: string }[]>(() => [
+  { value: 'clock', label: t('settings.defaultTabClock') },
+  { value: 'timestamp', label: t('settings.defaultTabTimestamp') },
 ])
 </script>
 
@@ -98,6 +103,20 @@ const langOptions = computed<{ value: LanguageMode; label: string }[]>(() => [
         <span>{{ o.label }}</span>
       </label>
     </div>
+
+    <div class="group">
+      <div class="group-label">{{ t('settings.defaultTab') }}</div>
+      <label v-for="o in defaultTabOptions" :key="o.value" class="opt">
+        <input
+          type="radio"
+          name="defaultTab"
+          :value="o.value"
+          :checked="defaultTab === o.value"
+          @change="defaultTab = o.value"
+        />
+        <span>{{ o.label }}</span>
+      </label>
+    </div>
   </div>
 </template>
 
@@ -108,11 +127,13 @@ const langOptions = computed<{ value: LanguageMode; label: string }[]>(() => [
   top: 44px;
   left: 12px;
   right: 12px;
+  bottom: 12px;
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 12px;
   animation: drop 0.2s ease;
+  overflow-y: auto;
 }
 @keyframes drop {
   from {

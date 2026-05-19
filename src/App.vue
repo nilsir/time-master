@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useT } from '@/composables/useT'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
+import { useStoredValue } from '@/composables/useStorage'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import WorldClockList from '@/components/WorldClock/WorldClockList.vue'
 import TimestampTool from '@/components/TimestampTool/TimestampTool.vue'
@@ -17,8 +18,15 @@ useLocale()
 const { t } = useT()
 
 type Tab = 'clock' | 'timestamp'
-const tab = ref<Tab>('clock')
+const defaultTab = useStoredValue('defaultTab')
+const tab = ref<Tab>(defaultTab.value)
 const showSettings = ref(false)
+
+// 存储异步加载完成后同步一次初始值，之后停止监听
+const stopWatch = watch(defaultTab, (val) => {
+  tab.value = val
+  stopWatch()
+})
 
 const tabOptions = computed(() => [
   { value: 'clock' as const, label: t('tabs.worldClock') },
