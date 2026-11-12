@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useT()
-const { copied, copy } = useClipboard()
+const { copied, failed, copy } = useClipboard()
 
 async function onClick() {
   await copy(props.text)
@@ -20,11 +20,12 @@ async function onClick() {
   <button
     class="copy-btn"
     :class="[size === 'sm' ? 'sm' : 'md', { copied }]"
-    :title="copied ? t('copy.copied') : t('copy.copy')"
-    :aria-label="copied ? t('copy.copied') : t('copy.copy')"
+    :title="failed ? t('copy.failed') : copied ? t('copy.copied') : t('copy.copy')"
+    :aria-label="failed ? t('copy.failed') : copied ? t('copy.copied') : t('copy.copy')"
     @click="onClick"
   >
-    <span v-if="copied" class="ico" aria-hidden="true">✓</span>
+    <span v-if="failed" class="ico" role="status">!</span>
+    <span v-else-if="copied" class="ico" aria-hidden="true">✓</span>
     <span v-else class="ico" aria-hidden="true">⧉</span>
     <span v-if="label" class="lbl">{{ copied ? t('copy.copied') : label }}</span>
   </button>

@@ -4,6 +4,7 @@ import { useT } from '@/composables/useT'
 import { useTheme } from '@/composables/useTheme'
 import { useLocale } from '@/composables/useLocale'
 import { useStoredValue } from '@/composables/useStorage'
+import { useWindowBounds } from '@/composables/useWindowBounds'
 import SegmentedControl from '@/components/common/SegmentedControl.vue'
 import WorldClockList from '@/components/WorldClock/WorldClockList.vue'
 import TimestampTool from '@/components/TimestampTool/TimestampTool.vue'
@@ -13,6 +14,7 @@ const props = defineProps<{
   mode: 'popup' | 'standalone'
 }>()
 
+if (props.mode === 'standalone') useWindowBounds()
 useTheme()
 useLocale()
 const { t } = useT()
@@ -35,8 +37,8 @@ const tabOptions = computed(() => [
 
 function openStandalone() {
   if (!chrome?.runtime?.sendMessage) return
-  chrome.runtime.sendMessage({ type: 'OPEN_STANDALONE' }, () => {
-    if (props.mode === 'popup') window.close()
+  chrome.runtime.sendMessage({ type: 'OPEN_STANDALONE' }, (response) => {
+    if (!chrome.runtime.lastError && response?.ok && props.mode === 'popup') window.close()
   })
 }
 </script>
@@ -68,10 +70,8 @@ function openStandalone() {
     </div>
 
     <main class="main">
-      <Transition name="fade" mode="out-in">
-        <WorldClockList v-if="tab === 'clock'" key="clock" />
-        <TimestampTool v-else key="ts" />
-      </Transition>
+      <WorldClockList v-if="tab === 'clock'" />
+      <TimestampTool v-else />
     </main>
 
     <SettingsPanel v-if="showSettings" @close="showSettings = false" />
@@ -121,13 +121,5 @@ function openStandalone() {
   flex: 1;
   min-height: 0;
   position: relative;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.12s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

@@ -43,6 +43,7 @@ function pick(tz: string) {
           <button
             v-for="item in g.items"
             :key="item.tz"
+            :data-timezone="item.tz"
             class="tz-row"
             :class="{ disabled: addedSet.has(item.tz) }"
             :disabled="addedSet.has(item.tz)"

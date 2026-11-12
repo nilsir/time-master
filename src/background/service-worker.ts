@@ -2,6 +2,8 @@ const STANDALONE_URL = 'src/standalone/index.html'
 const BOUNDS_KEY = 'windowBounds'
 const STATE_KEY = 'standaloneWindowId'
 const DEFAULT_BOUNDS = { width: 380, height: 560 }
+let opening: Promise<void> | null = null
+let rememberedWindowId: number | null = null
 
 interface Bounds {
   width: number
@@ -11,13 +13,29 @@ interface Bounds {
 }
 
 async function getBounds(): Promise<Bounds> {
-  const r = await chrome.storage.local.get([BOUNDS_KEY])
-  const b = r[BOUNDS_KEY] as Partial<Bounds> | undefined
+  try {
+    const r = await chrome.storage.local.get([BOUNDS_KEY])
+    return normalizeBounds(r[BOUNDS_KEY])
+  } catch {
+    return { ...DEFAULT_BOUNDS }
+  }
+}
+
+function normalizeBounds(value: unknown): Bounds {
+  const b = value && typeof value === 'object' ? value as Partial<Bounds> : {}
+  const dimension = (value: unknown, fallback: number, min: number, max: number) =>
+    typeof value === 'number' && Number.isFinite(value)
+      ? Math.max(min, Math.min(max, Math.round(value)))
+      : fallback
+  const coordinate = (value: unknown) =>
+    typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 16384
+      ? Math.round(value)
+      : undefined
   return {
-    width: b?.width ?? DEFAULT_BOUNDS.width,
-    height: b?.height ?? DEFAULT_BOUNDS.height,
-    left: b?.left,
-    top: b?.top,
+    width: dimension(b.width, DEFAULT_BOUNDS.width, 320, 2560),
+    height: dimension(b.height, DEFAULT_BOUNDS.height, 360, 1600),
+    left: coordinate(b.left),
+    top: coordinate(b.top),
   }
 }
 
@@ -26,15 +44,19 @@ async function saveBounds(b: Bounds) {
 }
 
 async function getRememberedWindowId(): Promise<number | null> {
+  if (rememberedWindowId !== null) return rememberedWindowId
   const r = await chrome.storage.local.get([STATE_KEY])
-  return (r[STATE_KEY] as number | undefined) ?? null
+  const id = r[STATE_KEY]
+  return typeof id === 'number' && Number.isInteger(id) && id >= 0 ? id : null
 }
 async function setRememberedWindowId(id: number | null) {
+  rememberedWindowId = id
   if (id === null) await chrome.storage.local.remove(STATE_KEY)
   else await chrome.storage.local.set({ [STATE_KEY]: id })
 }
 
 async function focusOrCreateStandalone() {
+  if (!chrome.windows?.create) throw new Error('此浏览器不支持独立窗口')
   const id = await getRememberedWindowId()
   if (id !== null) {
     try {
@@ -44,7 +66,7 @@ async function focusOrCreateStandalone() {
         return
       }
     } catch {
-      // not found, fall through
+      // 原窗口已关闭，继续创建。
     }
   }
   const bounds = await getBounds()
@@ -58,13 +80,21 @@ async function focusOrCreateStandalone() {
     focused: true,
   })
   if (created?.id !== undefined) {
-    await setRememberedWindowId(created.id)
+    // 即使保存失败，当前后台生命周期内仍记住已创建窗口，避免重复创建。
+    await setRememberedWindowId(created.id).catch(() => {})
   }
+}
+
+function openStandalone() {
+  if (!opening) {
+    opening = focusOrCreateStandalone().finally(() => { opening = null })
+  }
+  return opening
 }
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.type === 'OPEN_STANDALONE') {
-    focusOrCreateStandalone()
+    openStandalone()
       .then(() => sendResponse({ ok: true }))
       .catch((e) => sendResponse({ ok: false, error: String(e) }))
     return true
@@ -72,12 +102,18 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   return false
 })
 
-chrome.windows.onRemoved.addListener(async (windowId) => {
-  const id = await getRememberedWindowId()
-  if (id === windowId) await setRememberedWindowId(null)
+chrome.windows?.onRemoved?.addListener((windowId) => {
+  void (async () => {
+    const id = await getRememberedWindowId()
+    if (id === windowId) await setRememberedWindowId(null)
+  })().catch(() => {})
 })
 
-chrome.windows.onBoundsChanged?.addListener(async (window) => {
+chrome.windows?.onBoundsChanged?.addListener((window) => {
+  void saveWindowBounds(window).catch(() => {})
+})
+
+async function saveWindowBounds(window: chrome.windows.Window) {
   const id = await getRememberedWindowId()
   if (id !== window.id) return
   if (
@@ -87,10 +123,12 @@ chrome.windows.onBoundsChanged?.addListener(async (window) => {
   ) {
     return
   }
-  await saveBounds({
+  await saveBounds(normalizeBounds({
     width: window.width,
     height: window.height,
     left: window.left,
     top: window.top,
-  })
-})
+  }))
+}
+
+export {}

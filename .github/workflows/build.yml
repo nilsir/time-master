@@ -1,17 +1,58 @@
-name: Release
+name: Build and Release
 
 on:
   push:
-    branches: [main]
+  pull_request:
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  release:
+  validate:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Check time conversion across host timezones
+        run: |
+          TZ=Asia/Shanghai npm test -- src/lib/time.test.ts src/lib/time-upgrade.test.ts src/composables/useTimezones.test.ts
+          TZ=America/New_York npm test -- src/lib/time.test.ts src/lib/time-upgrade.test.ts src/composables/useTimezones.test.ts
+
+      - name: Check types
+        run: npm run typecheck
+
+      - name: Build both browser packages
+        run: npm run build:packages
+
+      - name: Verify ZIP manifest versions
+        run: npm run verify:packages
+
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Test the loaded Chrome extension
+        run: npm run test:e2e
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,15 +65,6 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-
-      - name: Build Chrome extension
-        run: npm run build
-
-      - name: Package Chrome dist
-        run: zip -r time-master.zip dist/
-
-      - name: Build Firefox extension
-        run: node scripts/build-firefox.mjs
 
       - name: Semantic Release
         run: npx semantic-release

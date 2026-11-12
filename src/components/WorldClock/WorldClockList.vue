@@ -5,6 +5,7 @@ import { useNow } from '@/composables/useNow'
 import { useStoredValue } from '@/composables/useStorage'
 import WorldClockItem from './WorldClockItem.vue'
 import TimezonePicker from './TimezonePicker.vue'
+import TimePlanner from './TimePlanner.vue'
 
 const { t } = useT()
 const { now } = useNow()
@@ -12,6 +13,8 @@ const selectedTimezones = useStoredValue('selectedTimezones')
 const timeFormat = useStoredValue('timeFormat')
 
 const showPicker = ref(false)
+const plan = ref({ ms: null as number | null, active: false, start: 9, end: 18, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })
+const displayedMs = computed(() => plan.value.active ? plan.value.ms : now.value)
 
 function getSelectedList() {
   return Array.isArray(selectedTimezones.value) ? selectedTimezones.value : []
@@ -78,6 +81,8 @@ function onListPointerUp() {
 
 <template>
   <div class="wc-wrap">
+    <TimePlanner :zones="displayList" :now="now" @change="plan = $event" />
+    <p v-if="plan.active && displayedMs === null" class="error planner-error">{{ t('planner.invalidSelection') }}</p>
     <div v-if="displayList.length === 0" class="wc-empty">
       <div class="wc-empty-icon">🌐</div>
       <div class="wc-empty-title">{{ t('worldClock.emptyTitle') }}</div>
@@ -85,7 +90,7 @@ function onListPointerUp() {
     </div>
 
     <div
-      v-else
+      v-else-if="displayedMs !== null"
       ref="listEl"
       class="wc-list"
       role="list"
@@ -98,7 +103,11 @@ function onListPointerUp() {
           v-for="(tz, i) in displayList"
           :key="tz"
           :tz="tz"
-          :ms="now"
+          :ms="displayedMs"
+          :planning="plan.active"
+          :work-start="plan.start"
+          :work-end="plan.end"
+          :reference-timezone="plan.active ? plan.timezone : undefined"
           :format="timeFormat"
           :is-dragging="dragIndex !== null && i === dragIndex"
           @remove="remove(tz)"
@@ -128,15 +137,17 @@ function onListPointerUp() {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow-y: auto;
 }
 .wc-list {
-  flex: 1;
+  flex: 1 0 150px;
   overflow-y: auto;
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+.planner-error { padding: 12px; }
 .wc-sort-move {
   transition: transform 0.2s ease;
 }

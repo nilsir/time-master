@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useT } from '@/composables/useT'
-import dayjs from '@/lib/dayjs'
 import {
   isDaytime,
   hourOffsetLabel,
   relativeDayOffset,
   tzCityName,
+  formatMillis,
+  utcOffsetLabel,
+  workingStatus,
 } from '@/lib/time'
 import { TIMEZONE_CN_ALIASES } from '@/lib/constants'
 
@@ -15,6 +17,10 @@ const props = defineProps<{
   ms: number
   format: '12h' | '24h'
   isDragging?: boolean
+  planning?: boolean
+  workStart?: number
+  workEnd?: number
+  referenceTimezone?: string
 }>()
 
 const emit = defineEmits<{
@@ -25,10 +31,12 @@ const emit = defineEmits<{
 const { t, locale } = useT()
 
 const daytime = computed(() => isDaytime(props.ms, props.tz))
-const date = computed(() => dayjs(props.ms).tz(props.tz).format('MM-DD'))
+function text(fmt: string) { const r = formatMillis(props.ms, props.tz, fmt); return r.ok ? r.value : '' }
+const date = computed(() => text(props.planning ? 'YYYY-MM-DD' : 'MM-DD'))
+const atWork = computed(() => workingStatus(props.ms, props.tz, props.workStart, props.workEnd))
 const clock = computed(() => {
   const fmt = props.format === '24h' ? 'HH:mm' : 'h:mm A'
-  return dayjs(props.ms).tz(props.tz).format(fmt)
+  return text(fmt)
 })
 const cityName = computed(() => {
   if (locale.value === 'zh') {
@@ -38,7 +46,7 @@ const cityName = computed(() => {
   return tzCityName(props.tz)
 })
 const relative = computed(() => {
-  const days = relativeDayOffset(props.ms, props.tz)
+  const days = relativeDayOffset(props.ms, props.tz, props.referenceTimezone)
   if (days === 0) return t('worldClock.relative.today')
   if (days === 1) return t('worldClock.relative.tomorrow')
   if (days === -1) return t('worldClock.relative.yesterday')
@@ -46,7 +54,7 @@ const relative = computed(() => {
   return t('worldClock.relative.daysBefore', { n: Math.abs(days) })
 })
 const subtitle = computed(
-  () => `${relative.value} ${hourOffsetLabel(props.ms, props.tz)}`,
+  () => `${relative.value} ${hourOffsetLabel(props.ms, props.tz, props.referenceTimezone)}`,
 )
 
 // Swipe-to-delete
@@ -150,19 +158,23 @@ function onHandlePointerDown(e: PointerEvent) {
       @pointerup="onPointerUp"
       @pointercancel="onPointerCancel"
     >
-      <div
+      <button
+        type="button"
+        :aria-label="t('worldClock.removeTitle') + ' ' + cityName"
+        :tabindex="revealed ? 0 : -1"
         class="wc-delete-bg"
         :class="{ 'is-revealed': revealed }"
         :style="{ opacity: deleteOpacity }"
-        aria-hidden="true"
+        :aria-hidden="!revealed"
         @click.stop="onDeleteClick"
       >
         <span>{{ t('worldClock.removeTitle') }}</span>
-      </div>
+      </button>
       <div :class="['wc-item', daytime ? 'day' : 'night']" :style="cardStyle" role="listitem" @click="onCardClick">
         <div class="wc-info">
           <div class="wc-city">{{ cityName }}</div>
           <div class="wc-sub tabular">{{ subtitle }}</div>
+          <div v-if="planning" class="wc-work" :class="{ working: atWork }">{{ utcOffsetLabel(ms, tz) }} · {{ t(atWork ? 'planner.working' : 'planner.offWork') }}</div>
         </div>
         <div class="wc-time tabular">
           <div class="wc-date">{{ date }}</div>
@@ -276,6 +288,8 @@ function onHandlePointerDown(e: PointerEvent) {
   font-weight: 400;
   margin-top: 2px;
 }
+.wc-work { font-size: 11px; margin-top: 4px; opacity: 0.75; }
+.wc-work.working { color: var(--accent); opacity: 1; }
 .wc-time {
   display: flex;
   flex-direction: column;
