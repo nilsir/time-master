@@ -1,25 +1,26 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '@/composables/useT'
-import { getTimezoneList } from '@/composables/useTimezones'
+import { useTimezones } from '@/composables/useTimezones'
 
 const props = defineProps<{
   modelValue: string
   placeholder?: string
+  at?: number
 }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 
 const { t } = useT()
 const open = ref(false)
 const query = ref('')
-const all = getTimezoneList()
-const filtered = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  if (!q) return all.slice(0, 100)
-  return all.filter((entry) => entry.haystack.includes(q)).slice(0, 200)
-})
-
-const current = computed(() => all.find((entry) => entry.tz === props.modelValue))
+const root = ref<HTMLElement | null>(null)
+const { all, filtered } = useTimezones(() => query.value, () => props.at ?? Date.now())
+const current = computed(() => all.value.find(entry => entry.tz === props.modelValue))
+function closeOutside(e: PointerEvent) {
+  if (!root.value?.contains(e.target as Node)) open.value = false
+}
+onMounted(() => document.addEventListener('pointerdown', closeOutside))
+onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOutside))
 
 watch(open, (v) => {
   if (!v) query.value = ''
@@ -32,7 +33,7 @@ function pick(tz: string) {
 </script>
 
 <template>
-  <div class="tz-select" :class="{ open }">
+  <div ref="root" class="tz-select" :class="{ open }" @keydown.esc.stop="open = false">
     <button
       class="tz-trigger"
       :aria-expanded="open"
@@ -57,6 +58,7 @@ function pick(tz: string) {
         <button
           v-for="entry in filtered"
           :key="entry.tz"
+          :data-timezone="entry.tz"
           class="tz-item"
           :class="{ active: entry.tz === modelValue }"
           role="option"

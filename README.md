@@ -1,107 +1,77 @@
 # Time Master
 
-[![Release](https://github.com/nilsir/time-master/actions/workflows/build.yml/badge.svg)](https://github.com/nilsir/time-master/actions/workflows/build.yml)
+[![构建与发布](https://github.com/nilsir/time-master/actions/workflows/build.yml/badge.svg)](https://github.com/nilsir/time-master/actions/workflows/build.yml)
 
-> 面向开发者的时间工具 Chrome 插件，把时间戳转换、世界时钟等高频操作收敛到浏览器工具栏，点开即用。
+面向开发者的浏览器时间工具：统一时间转换、实时世界时钟与跨时区时间规划，支持 Chrome、Firefox 桌面扩展。
+
+## 功能
+
+- **统一转换**：粘贴整数时间戳、ISO 日期或所选格式的时间字符串，自动识别；数字可明确选择秒或毫秒。
+- **六种结果**：秒、毫秒、ISO、UTC、本地与目标时区，一键复制。ISO 内的偏移优先；无偏移日期使用输入时区。
+- **严格校验**：拒绝不存在的日期、无效时间和夏令时跳过的当地时间；重复时间提供较早、较晚两个候选。
+- **常用格式**：输入或选择 Day.js 格式令牌，自动保存并在两个入口之间同步。粘贴内容不保存到存储。
+- **实时世界时钟**：昼夜配色、中文城市别名、UTC 与分钟级偏移搜索、拖动排序、左滑删除。暂停当前时间戳不会冻结世界时钟。
+- **时间规划**：选择参考时区、日期、时间，或拖动 15 分钟步进滑块，让所有时钟联动；可随时恢复实时。
+- **工作时段**：比较各地周一至周五的工作时间，支持调整起止整点，展示参考日内共同工作时段。结束点不包含在工作时间内，不含当地节假日。
+- **界面设置**：中英双语、浅色/深色/系统主题、12/24 小时制、默认标签页；支持工具栏弹窗与独立窗口。
 
 ## 截图
 
-<p align="center">
-  <img src="docs/screenshot-world-clock.png" width="280" alt="世界时钟" />
-  <img src="docs/screenshot-timestamp.png" width="280" alt="时间戳工具" />
-  <img src="docs/screenshot-settings.png" width="280" alt="设置" />
-</p>
+![世界时钟](docs/screenshot-world-clock.png)
 
-## 功能特性
+![统一转换](docs/screenshot-timestamp.png)
 
-- **世界时钟** — macOS 风格卡片，自动识别昼/夜配色，自选时区，左滑删除
-- **当前时间戳** — 实时展示秒级与毫秒级时间戳，点击即复制，支持暂停
-- **时间戳 → 格式化** — 输入任意 10 位（秒）或 13 位（毫秒）时间戳，转换为任意 IANA 时区的可读时间
-- **格式化 → 时间戳** — 输入格式化时间字符串，反查对应时间戳
-- 中英双语 · 浅色 / 深色 / 跟随系统主题 · 12 / 24 小时制 · Popup + 独立悬浮窗
+![跨时区规划](docs/screenshot-planner.png)
 
-## 安装使用
+## 安装
 
-1. 前往 [Releases](https://github.com/nilsir/time-master/releases) 页面，下载最新版 `time-master.zip`
-2. 解压，得到 `dist/` 目录
-3. 打开 Chrome，访问 `chrome://extensions`，开启右上角「开发者模式」
-4. 点击「加载已解压的扩展程序」，选择解压后的 `dist/` 目录
-5. 工具栏出现 Time Master 图标，点击即可使用
+1. 从 [发布页面](https://github.com/nilsir/time-master/releases) 下载 Chrome 或 Firefox 包。
+2. Chrome：解压 `time-master.zip`，在 `chrome://extensions` 开启开发者模式，加载解压后的 `dist/`。
+3. Firefox 桌面调试：解压 `time-master-firefox.zip`，在 `about:debugging` → 此 Firefox → 临时载入附加组件，选择 `manifest.json`。正式安装需浏览器要求的签名流程；本项目本地构建不等于已签名发布。
 
-## 开发
+Chrome 最低版本为 114；Firefox 构建最低版本为 140。Firefox Android 不支持桌面独立窗口，当前未纳入实机验收。
+
+## 开发与验证
 
 ```bash
-npm install       # 安装依赖
-npm run dev       # 启动开发服务器（支持 HMR）
-npm run build     # 生产构建，输出 dist/
-npm run test      # 运行单元测试
-npm run typecheck # TypeScript 类型检查
+npm ci
+npm run dev               # Vite + Chrome 扩展热更新
+npm test                  # 单元与构建链路回归
+npm run typecheck         # TypeScript 与 Vue 类型检查
+npm run build             # Chrome → dist/
+npm run build:firefox     # Chrome 构建后生成 Firefox 包
+npm run build:packages    # 同时生成两个最终 ZIP，并检查包内版本
+npm run verify:packages   # 再次读取两个 ZIP 的 manifest 进行版本校验
+npx playwright install chromium
+npm run test:e2e          # 在真实加载扩展的 Chromium 中测试两个入口
 ```
 
-构建产物在 `dist/`，在 `chrome://extensions` 开发者模式下加载即可调试。
-
-## 技术栈
-
-| 类别 | 技术 |
-|---|---|
-| 框架 | Vue 3 + TypeScript + `<script setup>` |
-| 构建 | Vite + @crxjs/vite-plugin |
-| 时间处理 | Day.js（utc + timezone + customParseFormat 插件）|
-| 存储 | chrome.storage.sync |
-| 样式 | 原生 CSS Variables |
-| 测试 | Vitest |
-| 发布 | semantic-release（语义化版本自动发布）|
-
----
-
-# Time Master
-
-[![Release](https://github.com/nilsir/time-master/actions/workflows/build.yml/badge.svg)](https://github.com/nilsir/time-master/actions/workflows/build.yml)
-
-> A Chrome extension for developers — timestamp conversion, world clock, and more. All in one click from your browser toolbar.
-
-## Screenshots
-
-<p align="center">
-  <img src="docs/screenshot-world-clock.png" width="280" alt="World Clock" />
-  <img src="docs/screenshot-timestamp.png" width="280" alt="Timestamp Tools" />
-  <img src="docs/screenshot-settings.png" width="280" alt="Settings" />
-</p>
-
-## Features
-
-- **World Clock** — macOS-style cards with automatic day/night colors, custom timezones, swipe-left to delete
-- **Current Timestamp** — Live seconds & milliseconds timestamps with one-click copy and pause support
-- **Timestamp → Formatted** — Convert any 10-digit (seconds) or 13-digit (ms) timestamp to a human-readable time in any IANA timezone
-- **Formatted → Timestamp** — Parse a formatted time string back to a Unix timestamp
-- Bilingual (zh/en) · Light / Dark / System theme · 12 / 24-hour · Popup + standalone floating window
-
-## Installation
-
-1. Go to [Releases](https://github.com/nilsir/time-master/releases) and download the latest `time-master.zip`
-2. Unzip to get the `dist/` folder
-3. Open Chrome → `chrome://extensions` → enable **Developer mode** (top-right toggle)
-4. Click **Load unpacked** → select the `dist/` folder
-5. The Time Master icon will appear in your toolbar — click to launch
-
-## Development
+打包需要系统 `zip`、`unzip`。E2E 使用独立的临时 Chromium 用户数据目录，不访问日常浏览器资料。多宿主时区回归可执行：
 
 ```bash
-npm install       # install dependencies
-npm run dev       # start dev server with HMR
-npm run build     # production build → dist/
-npm run test      # run unit tests
-npm run typecheck # TypeScript check
+TZ=UTC npm test
+TZ=Asia/Shanghai npm test
+TZ=America/New_York npm test
 ```
 
-## Tech Stack
+## 时间与规划约定
 
-| Category | Technology |
-|---|---|
-| Framework | Vue 3 + TypeScript + `<script setup>` |
-| Build | Vite + @crxjs/vite-plugin |
-| Time | Day.js (utc + timezone + customParseFormat) |
-| Storage | chrome.storage.sync |
-| Styles | Native CSS Variables |
-| Testing | Vitest |
-| Release | semantic-release (automated semver) |
+- 自动数字识别沿用位数启发式；历史短毫秒值有歧义时，选择“毫秒”。仅接受安全整数，秒转换为毫秒后也必须在有效日期范围内。
+- ISO 输出使用原生 ISO 格式，保留毫秒及扩展年份。带偏移 ISO 输入优先解析偏移；自定义格式严格匹配完整输入，方括号表示字面量。
+- 日期解析和工作时段计算均在 `src/lib/time.ts`。组件不直接使用 Day.js。
+- 跨日标签按目标与参考时区的日历日期比较；规划模式的参考时区可自行选择，实时模式使用本地时区。
+- 共同工作时段按绝对时间每 15 分钟采样，覆盖真实的 23/25 小时夏令时日期；历史秒级偏移不提供秒粒度规划精度。
+- 规划状态与数字单位选择只在当前面板保留。常用格式、目标时区和用户设置通过 `chrome.storage.sync` 保存；窗口边界使用 `chrome.storage.local`。
+- Firefox 的窗口边界由独立页面低频检查及尺寸变化事件保存；关闭页面时的最终异步写入属于尽力保存。
+
+## 构建与发布
+
+分支推送与 PR 执行单测、类型检查、双浏览器构建、ZIP 版本校验及 Chromium E2E；普通分支不调用发布流程。
+
+仅 `main` 推送进入语义化发布：先确定新版本，由 npm 插件更新 `package.json`，再运行本地 `prepare` 插件重新构建、清理旧文件、打包并校验两个 ZIP 的版本，之后创建 Release 和版本提交。
+
+`feat:` 触发 minor，`fix:` 触发 patch，`BREAKING CHANGE` 触发 major；`docs:` / `chore:` 不自动生成新版本。本次三个阶段作为一次功能交付，不提前写入假定的发布版本。
+
+## 已知验证边界
+
+Chromium 自动化覆盖工具栏页面、独立页面、后台开窗、同步、复制和规划；Firefox 通过打包与静态检查，仍需真实 Firefox 手工回归。无来源标识的存储事件存在同值歧义：在有限的旧写入回声识别窗口内，其他页面恰好写入相同旧值无法被严格区分。

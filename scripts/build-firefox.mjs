@@ -1,7 +1,7 @@
-import { readFileSync, writeFileSync, cpSync, mkdirSync } from 'fs'
-import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { execSync } from 'child_process'
+import { readFileSync, writeFileSync, cpSync, rmSync } from 'node:fs'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
@@ -22,18 +22,18 @@ const firefoxPatch = {
   },
 }
 
-// Copy dist/ → dist-firefox/
+// 先清理旧目录，避免已从 Chrome 构建中删除的文件留在 Firefox 发布包里。
 const src = resolve(root, 'dist')
 const dest = resolve(root, 'dist-firefox')
-mkdirSync(dest, { recursive: true })
+rmSync(dest, { recursive: true, force: true })
+rmSync(resolve(root, 'time-master-firefox.zip'), { force: true })
 cpSync(src, dest, { recursive: true })
 
-// Patch manifest.json
+// 转换 Firefox 的 manifest 配置。
 const manifestPath = resolve(dest, 'manifest.json')
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
 
-// Firefox < 121 does not support background.service_worker;
-// convert to background.scripts (event page) which Firefox supports.
+// 将 service worker 转为 Firefox 支持的 event page。
 const bg = manifest.background ?? {}
 if (bg.service_worker) {
   manifest.background = {
@@ -42,18 +42,23 @@ if (bg.service_worker) {
   }
 }
 
-// Remove minimum_chrome_version (Chrome-only field)
+// 删除仅 Chrome 使用的字段。
 delete manifest.minimum_chrome_version
 
 const patched = { ...manifest, ...firefoxPatch }
 writeFileSync(manifestPath, JSON.stringify(patched, null, 2))
 
-console.log('Firefox manifest patched.')
+console.log('已生成 Firefox manifest。')
 
-// Package with web-ext
-execSync(
-  `npx web-ext build --source-dir dist-firefox --artifacts-dir . --filename time-master-firefox.zip --overwrite-dest`,
+// 直接调用已安装的 web-ext，不通过 shell 或临时下载依赖。
+execFileSync(
+  process.execPath,
+  [
+    resolve(root, 'node_modules/web-ext/bin/web-ext.js'),
+    'build', '--source-dir', 'dist-firefox', '--artifacts-dir', '.',
+    '--filename', 'time-master-firefox.zip', '--overwrite-dest',
+  ],
   { cwd: root, stdio: 'inherit' },
 )
 
-console.log('Firefox build complete → time-master-firefox.zip')
+console.log('Firefox 构建完成 → time-master-firefox.zip')

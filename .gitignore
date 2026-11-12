@@ -8,3 +8,7 @@ dist
 .claude/settings.local.json
 dist-firefox
 time-master-firefox.zip
+
+time-master.zip
+playwright-report
+test-results

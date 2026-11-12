@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useT } from '@/composables/useT'
-import dayjs from '@/lib/dayjs'
-import { useNow, togglePause } from '@/composables/useNow'
+import { formatMillis, localTimezone } from '@/lib/time'
+import { useNow } from '@/composables/useNow'
 import { useClipboard } from '@/composables/useClipboard'
 import { useStoredValue } from '@/composables/useStorage'
 
 const { t } = useT()
-const { now, paused } = useNow()
+const { now } = useNow()
+const frozen = ref<number | null>(null)
+const paused = computed(() => frozen.value !== null)
+const displayedNow = computed(() => frozen.value ?? now.value)
+function togglePause() { frozen.value = paused.value ? null : now.value }
 const tsUnit = useStoredValue('tsUnit')
-const seconds = computed(() => Math.floor(now.value / 1000))
-const millis = computed(() => now.value)
-const local = computed(() => dayjs(now.value).format('YYYY-MM-DD HH:mm:ss'))
+const seconds = computed(() => Math.floor(displayedNow.value / 1000))
+const millis = computed(() => displayedNow.value)
+const local = computed(() => { const r = formatMillis(displayedNow.value, localTimezone()); return r.ok ? r.value : '' })
 
 const sClip = useClipboard()
 const msClip = useClipboard()
@@ -62,6 +66,7 @@ async function copyMs() {
       <span class="status">{{ msClip.copied.value ? '✓' : '⧉' }}</span>
     </button>
 
+    <p v-if="sClip.failed.value || msClip.failed.value" class="error" role="alert">{{ t('copy.failed') }}</p>
     <div class="local tabular">{{ t('timestamp.localPrefix') }}{{ local }}</div>
   </section>
 </template>

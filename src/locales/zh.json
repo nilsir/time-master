@@ -67,15 +67,69 @@
     "invalidTs": "无效时间戳",
     "inputRequired": "请输入时间",
     "parseFailed": "时间格式无法解析",
-    "tzOrFmtInvalid": "时区或格式无效：{detail}"
+    "tzOrFmtInvalid": "时区或格式无效：{detail}",
+    "nonexistentTime": "夏令时切换跳过了这个当地时间，请选择其他时间。",
+    "invalidWorkHours": "工作开始时间必须早于结束时间。"
   },
   "copy": {
     "copy": "复制",
-    "copied": "已复制"
+    "copied": "已复制",
+    "failed": "复制失败，请手动复制"
   },
   "tzSelect": {
     "placeholder": "选择时区",
     "searchPlaceholder": "搜索城市或 UTC 偏移（如 +8）",
     "noMatch": "无匹配结果"
+  },
+  "converter": {
+    "title": "统一时间转换",
+    "useNow": "填入当前时间",
+    "input": "粘贴时间戳或日期时间",
+    "placeholder": "例如 1794448800 或 2026-11-12T10:00:00+08:00",
+    "inputUnit": "数字单位",
+    "auto": "自动识别",
+    "inputTimezone": "输入时区",
+    "targetTimezone": "目标时区",
+    "timezoneHint": "不带偏移的日期按输入时区解析；ISO 中的 Z 或 ±HH:mm 优先。",
+    "format": "常用格式（自动保存）",
+    "detected": "已识别：",
+    "kind": {
+      "s": "秒级时间戳",
+      "ms": "毫秒级时间戳",
+      "iso": "ISO 日期时间",
+      "formatted": "格式化日期时间"
+    },
+    "output": {
+      "seconds": "秒",
+      "millis": "毫秒",
+      "iso": "ISO",
+      "utc": "UTC",
+      "local": "本地",
+      "target": "目标时区"
+    }
+  },
+  "planner": {
+    "open": "规划时间",
+    "backToLive": "恢复实时",
+    "live": "实时世界时钟",
+    "fixedTime": "所有时钟联动到指定时刻",
+    "reference": "参考时区",
+    "date": "规划日期",
+    "time": "规划时间",
+    "slider": "按15分钟调整时间",
+    "ambiguous": "夏令时结束，这个当地时间出现两次，请选择一次。",
+    "occurrence": "选择重复时间",
+    "earlier": "较早一次",
+    "later": "较晚一次",
+    "workHours": "工作时间",
+    "workStart": "工作开始时间",
+    "workEnd": "工作结束时间",
+    "workHint": "按各地周一至周五及相同工作时段估算，未包含当地节假日。",
+    "overlap": "共同工作时段（参考时区，15分钟粒度）",
+    "addZones": "添加时区后查看重叠。",
+    "noOverlap": "所选参考日没有共同工作时段。",
+    "working": "工作时间",
+    "offWork": "非工作时间",
+    "invalidSelection": "请先修正规划时间或工作时段，再查看时钟。"
   }
 }

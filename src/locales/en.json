@@ -67,15 +67,69 @@
     "invalidTs": "Invalid timestamp",
     "inputRequired": "Please enter a time",
     "parseFailed": "Cannot parse with selected format",
-    "tzOrFmtInvalid": "Invalid timezone or format: {detail}"
+    "tzOrFmtInvalid": "Invalid timezone or format: {detail}",
+    "nonexistentTime": "This local time is skipped by a daylight-saving change. Choose another time.",
+    "invalidWorkHours": "Work must start before it ends."
   },
   "copy": {
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "failed": "Copy failed; please copy manually"
   },
   "tzSelect": {
     "placeholder": "Choose timezone",
     "searchPlaceholder": "Search city or UTC offset (e.g. +8)",
     "noMatch": "No matches"
+  },
+  "converter": {
+    "title": "Time converter",
+    "useNow": "Use current time",
+    "input": "Paste a timestamp or date",
+    "placeholder": "e.g. 1794448800 or 2026-11-12T10:00:00+08:00",
+    "inputUnit": "Number unit",
+    "auto": "Auto detect",
+    "inputTimezone": "Input timezone",
+    "targetTimezone": "Target timezone",
+    "timezoneHint": "Dates without an offset use the input timezone. An ISO Z or ±HH:mm takes priority.",
+    "format": "Preferred format (saved automatically)",
+    "detected": "Detected: ",
+    "kind": {
+      "s": "Unix seconds",
+      "ms": "Unix milliseconds",
+      "iso": "ISO date and time",
+      "formatted": "Formatted date and time"
+    },
+    "output": {
+      "seconds": "Seconds",
+      "millis": "Millis",
+      "iso": "ISO",
+      "utc": "UTC",
+      "local": "Local",
+      "target": "Target"
+    }
+  },
+  "planner": {
+    "open": "Plan a time",
+    "backToLive": "Back to live",
+    "live": "Live world clocks",
+    "fixedTime": "All clocks follow the planned time",
+    "reference": "Reference timezone",
+    "date": "Planning date",
+    "time": "Planning time",
+    "slider": "Adjust time in 15-minute steps",
+    "ambiguous": "This local time occurs twice when daylight saving ends. Choose an occurrence.",
+    "occurrence": "Choose occurrence",
+    "earlier": "Earlier",
+    "later": "Later",
+    "workHours": "Work hours",
+    "workStart": "Work starts",
+    "workEnd": "Work ends",
+    "workHint": "Estimates Monday–Friday with the same local hours in each zone; local holidays are excluded.",
+    "overlap": "Shared work hours (reference zone, 15-min steps)",
+    "addZones": "Add timezones to compare work hours.",
+    "noOverlap": "No shared work hours on this reference date.",
+    "working": "Working hours",
+    "offWork": "Outside work hours",
+    "invalidSelection": "Correct the planned time or work hours to display clocks."
   }
 }
